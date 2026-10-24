@@ -1,11 +1,25 @@
 import cors from 'cors';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import express from 'express';
 import multer from 'multer';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { getEnv, getEnvBool, isDevMode } from './utilities.js';
+import { Verify } from './verify.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const pidFile = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..',
+    '.medically-api.pid'
+);
+const htmlDirectory = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..',
+    'html'
+);
 
 app.use(express.json());
 
@@ -18,6 +32,14 @@ app.use(cors({
     methods: ['POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'x-api-key']
 }));
+
+app.use(express.static(htmlDirectory));
+app.get('/imaging-desk', (req, res) => {
+    res.sendFile(path.join(htmlDirectory, 'Imaging-Desk.html'));
+});
+app.get('/cris', (req, res) => {
+    res.sendFile(path.join(htmlDirectory, 'CRIS-Radiography-Worklist.html'));
+});
 
 // Store uploads in memory buffer instead of writing to disk
 const upload = multer({ storage: multer.memoryStorage() });
@@ -126,8 +148,25 @@ app.post('/api/process-file', upload.single('file'), async (req, res) =>
             return res.status(400).json({ error: 'No JSON file or payload provided.' });
         }
 
+        console.log("Received request. Processing...")
+
         // 1. Parse structured headings
-        // const structuredData = parseStructuredText(fileText);
+        //const structuredData = parseStructuredText(fileText);
+        const structuredData = bookingData;
+
+        // 2. Verify Data is accurate 
+        // Send provisional response to say more data is coming
+        res.writeProcessing();
+
+        const verified = await Verify(structuredData);
+        if (!verified.decision) {
+            res.status(406).json({
+                success: false,
+                error: "Referral notes are not suitable.",
+                message: verified.response
+            });
+            return;
+        }
 
         // 2. Forward parsed payload to Website 2
         const responseData = await sendToWebsite2(structuredData);
@@ -151,6 +190,28 @@ app.post('/api/process-file', upload.single('file'), async (req, res) =>
     }
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
+    writeFileSync(pidFile, String(process.pid));
     console.log(`Medically API running on port ${PORT}`);
 });
+
+function removePidFile() {
+    if (existsSync(pidFile) && readFileSync(pidFile, 'utf8').trim() === String(process.pid)) {
+        rmSync(pidFile);
+    }
+}
+
+process.on('exit', removePidFile);
+
+for (const signal of ['SIGINT', 'SIGTERM']) {
+    process.once(signal, () => {
+        console.log(`Received ${signal}; shutting down Medically API...`);
+        server.close((error) => {
+            if (error) {
+                console.error('Could not close the Medically API server:', error);
+                process.exitCode = 1;
+            }
+            removePidFile();
+        });
+    });
+}
