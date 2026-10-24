@@ -127,6 +127,8 @@ app.post('/api/process-file', upload.single('file'), async (req, res) =>
             return res.status(400).json({ error: 'No JSON file or payload provided.' });
         }
 
+        console.log("Received request. Processing...")
+
         // 1. Parse structured headings
         //const structuredData = parseStructuredText(fileText);
         const structuredData = bookingData;
