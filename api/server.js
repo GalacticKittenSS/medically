@@ -1,12 +1,25 @@
 import cors from 'cors';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import express from 'express';
 import multer from 'multer';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { getEnv, getEnvBool, isDevMode } from './utilities.js';
 import { Verify } from './verify.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const pidFile = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..',
+    '.medically-api.pid'
+);
+const htmlDirectory = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..',
+    'html'
+);
 
 app.use(express.json());
 
@@ -181,3 +194,24 @@ const server = app.listen(PORT, () => {
     writeFileSync(pidFile, String(process.pid));
     console.log(`Medically API running on port ${PORT}`);
 });
+
+function removePidFile() {
+    if (existsSync(pidFile) && readFileSync(pidFile, 'utf8').trim() === String(process.pid)) {
+        rmSync(pidFile);
+    }
+}
+
+process.on('exit', removePidFile);
+
+for (const signal of ['SIGINT', 'SIGTERM']) {
+    process.once(signal, () => {
+        console.log(`Received ${signal}; shutting down Medically API...`);
+        server.close((error) => {
+            if (error) {
+                console.error('Could not close the Medically API server:', error);
+                process.exitCode = 1;
+            }
+            removePidFile();
+        });
+    });
+}

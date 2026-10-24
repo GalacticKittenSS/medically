@@ -4,5 +4,6 @@ __pycache__/
 
 # Files
 .env
+.medically-api.pid
 
 node_modules
