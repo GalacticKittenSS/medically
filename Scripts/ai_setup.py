@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 OLLAMA_INSTALL_SCRIPT = "https://ollama.com/install.ps1"
-MODEL_NAME = "d3:latest"
+MODEL_NAME = "qwen3:1.7b"
 
 
 def find_ollama():
@@ -54,26 +54,31 @@ def install_ollama():
         )
 
 
-def pull_model():
+def pull_model(model_name = MODEL_NAME):
     ollama = find_ollama()
     if ollama is None:
         raise RuntimeError("Ollama is not installed.")
 
-    print(f"Downloading Ollama model {MODEL_NAME}...")
-    result = subprocess.run([str(ollama), "pull", MODEL_NAME], check=False)
+    print(f"Downloading Ollama model {model_name}...")
+    result = subprocess.run([str(ollama), "pull", model_name], check=False)
     if result.returncode != 0:
         raise SystemExit(
-            f"Could not pull {MODEL_NAME} (ollama exited with "
+            f"Could not pull {model_name} (ollama exited with "
             f"code {result.returncode}). Ensure the Ollama app is running and try again."
         )
 
-    print(f"Model {MODEL_NAME} is ready.")
+    print(f"Model {model_name} is ready.")
 
 
 def pull_and_install_ollama():
     try:
         install_ollama()
-        pull_model()
+        pull_model("qwen3:1.7b")
+        pull_model("d3:latest")
+        print(
+            "Ollama runs in the background on Windows. "
+            "Its local API is available at http://localhost:11434."
+        )
     except subprocess.CalledProcessError as error:
         raise SystemExit(
             f"Ollama installation failed with exit code {error.returncode}."
