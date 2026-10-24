@@ -2,9 +2,11 @@ import cors from 'cors';
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import express from 'express';
 import multer from 'multer';
+import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { closeDatabase, getPatients, getReferrals, savePatient, saveReferral } from './database.js';
 import { getEnv, getEnvBool, isDevMode } from './utilities.js';
 import { Verify } from './verify.js';
 
@@ -29,20 +31,76 @@ app.use(cors({
         'http://127.0.0.1:5500',  // Live Server default port
         'http://localhost:8080'
     ],
-    methods: ['POST', 'OPTIONS'],
+    methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'x-api-key']
 }));
 
 app.use(express.static(htmlDirectory));
 app.get('/imaging-desk', (req, res) => {
-    res.sendFile(path.join(htmlDirectory, 'Imaging-Desk.html'));
+    const page = readFileSync(path.join(htmlDirectory, 'Imaging-Desk.html'), 'utf8');
+    res.type('html').send(
+        page.replace(
+            '</body>',
+            '<script src="/imaging-patients.js"></script></body>'
+        )
+    );
 });
 app.get('/cris', (req, res) => {
-    res.sendFile(path.join(htmlDirectory, 'CRIS-Radiography-Worklist.html'));
+    const page = readFileSync(path.join(htmlDirectory, 'CRIS-Radiography-Worklist.html'), 'utf8');
+    res.type('html').send(
+        page.replace(
+            '</body>',
+            '<script src="/cris-referrals.js"></script></body>'
+        )
+    );
 });
 
 // Store uploads in memory buffer instead of writing to disk
 const upload = multer({ storage: multer.memoryStorage() });
+
+app.get('/api/patients', async (req, res) => {
+    try {
+        res.json(await getPatients());
+    } catch (error) {
+        console.error('Could not retrieve patients:', error);
+        res.status(500).json({ error: 'Could not retrieve patients.' });
+    }
+});
+
+app.post('/api/patients', async (req, res) => {
+    const patient = req.body;
+    if (
+        !patient
+        || typeof patient.name !== 'string'
+        || !patient.name.trim()
+        || typeof patient.nhsNumber !== 'string'
+        || !/^\d{10}$/.test(patient.nhsNumber.replace(/\s/g, ''))
+        || typeof patient.dob !== 'string'
+        || (patient.dob && !/^\d{4}-\d{2}-\d{2}$/.test(patient.dob))
+        || typeof patient.address !== 'string'
+        || typeof patient.gender !== 'string'
+        || typeof patient.mobilePhone !== 'string'
+    ) {
+        res.status(400).json({ error: 'Patient details are missing or invalid.' });
+        return;
+    }
+
+    try {
+        res.status(201).json({ patient: await savePatient(patient) });
+    } catch (error) {
+        console.error('Could not save patient:', error);
+        res.status(500).json({ error: 'Could not save patient.' });
+    }
+});
+
+app.get('/api/referrals', async (req, res) => {
+    try {
+        res.json(await getReferrals());
+    } catch (error) {
+        console.error('Could not retrieve referrals:', error);
+        res.status(500).json({ error: 'Could not retrieve referrals.' });
+    }
+});
 
 // Helper: Parse raw text file content grouped by headings
 function parseStructuredText(textContent) 
@@ -153,11 +211,11 @@ app.post('/api/process-file', upload.single('file'), async (req, res) =>
         // 1. Parse structured headings
         //const structuredData = parseStructuredText(fileText);
         const structuredData = bookingData;
+        if (typeof structuredData.referralId !== 'string' || !structuredData.referralId) {
+            structuredData.referralId = `IMG-${randomUUID()}`;
+        }
 
-        // 2. Verify Data is accurate 
-        // Send provisional response to say more data is coming
-        res.writeProcessing();
-
+        // 2. Verify Data is accurate
         const verified = await Verify(structuredData);
         if (!verified.decision) {
             res.status(406).json({
@@ -168,15 +226,20 @@ app.post('/api/process-file', upload.single('file'), async (req, res) =>
             return;
         }
 
-        // 2. Forward parsed payload to Website 2
+        // 2. Forward the current payload to Website 2
         const responseData = await sendToWebsite2(structuredData);
-        
-        // 3. Return success response back to Website 1
+
+        // 3. Save the accepted referral
+        const referralRecordId = await saveReferral(structuredData);
+
+        // 4. Return success response back to Website 1
         res.status(200).json(
         {
             success: true,
             message: isDevMode() ? 'Parsed and logged in DEV_MODE' : 'File parsed and successfully forwarded to Website 2.',
-            website2Ack: responseData
+            website2Ack: responseData,
+            referralRecordId,
+            referralId: structuredData.referralId
         });
 
     } catch (error) 
@@ -206,9 +269,15 @@ process.on('exit', removePidFile);
 for (const signal of ['SIGINT', 'SIGTERM']) {
     process.once(signal, () => {
         console.log(`Received ${signal}; shutting down Medically API...`);
-        server.close((error) => {
+        server.close(async (error) => {
             if (error) {
                 console.error('Could not close the Medically API server:', error);
+                process.exitCode = 1;
+            }
+            try {
+                await closeDatabase();
+            } catch (databaseError) {
+                console.error('Could not close the MariaDB connection pool:', databaseError);
                 process.exitCode = 1;
             }
             removePidFile();
