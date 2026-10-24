@@ -74,10 +74,14 @@ export async function decision_prompt(context, instructions, criteria_true, crit
         const data = await response.json();
         
         if (data.error) throw new Error(data.error);
-        return data.answers.noul > 0.5;
+        const probability = data.answers?.verify?.noul;
+        if (typeof probability !== 'number' || probability < 0 || probability > 1) {
+            throw new Error('Ollama returned an unexpected System One decision response.');
+        }
+        return probability > 0.5;
 
-        } catch (error) {
+    } catch (error) {
         console.error(`Request failed: ${error.message}`);
         throw error;
-        }
+    }
 }
