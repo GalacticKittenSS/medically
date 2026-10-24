@@ -2,6 +2,9 @@ import sys
 import subprocess
 import importlib.util as util
 
+PACKAGE_MODULE_NAMES = {"python-dotenv": "dotenv"}
+
+
 def __InstallPackage(packageName):
     permissionGranted = False
     while not permissionGranted:
@@ -12,7 +15,7 @@ def __InstallPackage(packageName):
         permissionGranted = (reply == 'y')
 
     print(f"Installing {packageName} module...")
-    subprocess.check_call(['pip', 'install', packageName])
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', packageName])
 
     return __ValidatePackage(packageName)
 
@@ -27,7 +30,8 @@ def __ValidatePython(versionMajor = 3, versionMinor = 3):
     return True
 
 def __ValidatePackage(packageName):
-    if util.find_spec(packageName) is None:
+    moduleName = PACKAGE_MODULE_NAMES.get(packageName, packageName)
+    if util.find_spec(moduleName) is None:
         return __InstallPackage(packageName)
 
     return True

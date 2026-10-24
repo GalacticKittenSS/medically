@@ -1,5 +1,7 @@
 import hashlib
 import json
+import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -88,9 +90,65 @@ def download_installer(destination, download_url, expected_hash):
         raise RuntimeError("The MariaDB installer checksum did not match.")
 
 
+def install_mariadb_linux():
+    if shutil.which("apt-get") is None or shutil.which("dpkg-query") is None:
+        raise SystemExit(
+            "Linux database setup currently requires an Ubuntu/Debian system "
+            "with apt-get and dpkg-query."
+        )
+
+    result = subprocess.run(
+        ["dpkg-query", "-W", "-f=${Status}", "mariadb-server"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode == 0:
+        server_installed = result.stdout.strip() == "install ok installed"
+    elif "no packages found matching" in result.stderr.lower():
+        server_installed = False
+    else:
+        raise RuntimeError(
+            f"Could not check the MariaDB package:\n{result.stderr.strip()}"
+        )
+
+    if not server_installed:
+        reply = input("MariaDB is not installed. Install it using apt? [Y/N]: ")
+        if reply.strip().lower()[:1] != "y":
+            return
+
+    if os.geteuid() == 0:
+        apt_prefix = []
+    else:
+        sudo = shutil.which("sudo")
+        if sudo is None:
+            raise SystemExit("Run this setup as root or install sudo to install MariaDB.")
+        apt_prefix = [sudo]
+    packages = [
+        "mariadb-server",
+        "libmariadb-dev",
+        "libmariadb-dev-compat",
+        "build-essential",
+        "python3-dev",
+        "pkg-config",
+        "curl",
+    ]
+
+    if not server_installed:
+        subprocess.run(apt_prefix + ["apt-get", "update"], check=True)
+    subprocess.run(
+        apt_prefix + ["apt-get", "install", "-y"] + packages,
+        check=True,
+    )
+    print("MariaDB and its Python connector build dependencies are ready.")
+
+
 def install_mariadb():
+    if sys.platform.startswith("linux"):
+        install_mariadb_linux()
+        return
     if sys.platform != "win32":
-        raise SystemExit("The MariaDB MSI setup script can only run on Windows.")
+        raise SystemExit("MariaDB setup currently supports Windows and Ubuntu/Debian Linux.")
 
     if mariadb_service_installed():
         print("MariaDB is already installed as a Windows service.")
