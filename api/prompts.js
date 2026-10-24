@@ -67,7 +67,8 @@ export async function decision_prompt(context, instructions, criteria_true, crit
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.text()}`);
+            const errorBody = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorBody}`);
         }
 
         const data = await response.json();
@@ -77,7 +78,6 @@ export async function decision_prompt(context, instructions, criteria_true, crit
 
         } catch (error) {
         console.error(`Request failed: ${error.message}`);
-        process.exitCode = 1;
-        return {};
+        throw error;
         }
 }
