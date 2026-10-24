@@ -109,7 +109,7 @@ def install_mariadb_linux():
         server_installed = False
     else:
         raise RuntimeError(
-            f"Could not check the MariaDB package:\n{result.stderr.strip()}"
+                f"Could not check the MariaDB package:\n{result.stderr.strip()}"
         )
 
     if not server_installed:

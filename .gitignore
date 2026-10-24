@@ -5,5 +5,7 @@ __pycache__/
 # Files
 .env
 .medically-api.pid
+.data/
 
 node_modules
+.vscode/
