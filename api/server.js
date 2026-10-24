@@ -20,6 +20,14 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'x-api-key']
 }));
 
+app.use(express.static(htmlDirectory));
+app.get('/imaging-desk', (req, res) => {
+    res.sendFile(path.join(htmlDirectory, 'Imaging-Desk.html'));
+});
+app.get('/cris', (req, res) => {
+    res.sendFile(path.join(htmlDirectory, 'CRIS-Radiography-Worklist.html'));
+});
+
 // Store uploads in memory buffer instead of writing to disk
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -169,6 +177,7 @@ app.post('/api/process-file', upload.single('file'), async (req, res) =>
     }
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
+    writeFileSync(pidFile, String(process.pid));
     console.log(`Medically API running on port ${PORT}`);
 });
