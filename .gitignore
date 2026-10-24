@@ -1,0 +1,6 @@
+# Python Folders (from Setup Scripts)
+__pycache__/
+.venv/
+
+# Files
+.env
