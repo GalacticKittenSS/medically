@@ -1,6 +1,16 @@
-# Medically API setup
+# Medically
 
-## Ubuntu and Debian
+# What is it?
+
+This is a prototype of a medical API designed to aid GPs when referring their patient's data to the hospital database for evaluation, reducing the chance of human error and the possibility of delays in hospital appointments. Using Ollama, it performs a client-side verification of the referral request with the booking & appointment information, sending the data back to the referrer for further evaluation if it seems like the referrer made a mistake in their referral.
+
+To demonstrate the API, we have provided a mockup interactive version of both an example GP interface (Imaging-Desk) and an example hospital interface (CRIS-Radiography-Worklist), which you can use to see how the code affects the typical process of referring a patient. Our API is designed to be easy to integrate within large-scale systems, requiring little effort on both the input/output ends to implement it. 
+
+# Installation/Setup of the Demo
+
+## Local Installation
+
+### Ubuntu and Debian
 
 The Linux setup installs MariaDB and its Python connector build dependencies
 through `apt`, installs Ollama with Ollama's official Linux installer, and
@@ -24,7 +34,7 @@ the root `.env` file before running setup; the Python setup script uses those
 values to create the application database and tables. The `ollama` command
 downloads the configured models, so ensure the machine has enough disk space.
 
-## Windows
+### Windows
 
 Run `Scripts/setup.bat` from the `Scripts` directory to use the existing
 Windows setup flow.
@@ -34,7 +44,7 @@ Windows setup flow.
 This project is designed so the AI model runs in one shared backend, not on every
 user's laptop. The backend reads the model endpoint from `OLLAMA_HOST`.
 
-1. Copy `.env.example` to `.env`.
+1. Copy `/tests/.env.example` to your `.env` (create your own if you haven't done so already).
 2. Set the model host to your shared machine, for example:
 
    ```env
