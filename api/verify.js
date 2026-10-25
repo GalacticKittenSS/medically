@@ -91,23 +91,8 @@ export async function Verify(data) {
 
 	const requiredFields = {
 		referral: ["area", "clinicalDetails"],
-		booking: [
-			"appointmentDate",
-			"appointmentTime",
-			"appointmentType",
-			"location",
-			"clinician",
-			"status",
-			"reason",
-		],
-		consultation: [
-			"presentingComplaint",
-			"history",
-			"examination",
-			"assessment",
-			"plan",
-			"additionalNotes",
-		],
+		booking: ["reason"],
+		consultation: ["presentingComplaint"]
 	};
 	const invalidFields = [];
 
@@ -137,13 +122,13 @@ export async function Verify(data) {
 	const referral = { ...data.referral };
 
 	const relevantBooking = {
-		reason: booking.reason,
+		reason: booking.reason ?? null,
 	};
 	const relevantConsultation = {
-		presentingComplaint: consultation.presentingComplaint,
-		history: consultation.history,
-		examination: consultation.examination,
-		additionalNotes: consultation.additionalNotes,
+		presentingComplaint: consultation.presentingComplaint ?? null,
+		history: consultation.history ?? null,
+		examination: consultation.examination ?? null,
+		additionalNotes: consultation.additionalNotes ?? null,
 	};
 	const relevantReferral = {
 		area: referral.area,
