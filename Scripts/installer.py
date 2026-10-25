@@ -9,9 +9,9 @@ from ai_setup import pull_and_install_ollama
 #subprocess.call(["git", "submodule", "update", "--init", "--recursive"])
 
 if sys.platform.startswith("linux"):
-    install_mariadb()
+	install_mariadb()
 
 install_python_packages(["requests", "mariadb", "python-dotenv"])
 if sys.platform == "win32":
-    install_mariadb()
+	install_mariadb()
 pull_and_install_ollama()

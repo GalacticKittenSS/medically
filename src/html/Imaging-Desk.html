@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Imaging Desk | GP referrals</title>
+		<link rel="stylesheet" href="../css/Imaging-Desk.css" />
+	</head>
+	<body>
+		<header>
+			<a href="#" class="brand"><b>✳</b> Imaging<span>Desk</span></a
+			><small>ELECTRONIC REQUESTING</small>
+			<div class="profile">
+				<i>AP</i>
+				<div>Dr Alex Patel<small>Riverside Medical Practice</small></div>
+			</div>
+		</header>
+		<div class="app">
+			<aside>
+				<small>WORKSPACE</small>
+				<nav>
+					<button data-tab="log" class="active">
+						▤ <span>Patient Log</span><em id="count">6</em></button
+					><button data-tab="referral">＋ <span>Referral</span></button
+					><button data-tab="review">☑ <span>Review</span></button>
+				</nav>
+				<div class="aside-bottom">
+					<b>ⓘ</b>
+					<h4>Your referral, connected.</h4>
+					<p>
+						Prepare a request, review the details and export it for your
+						receiving application.
+					</p>
+					<small>● Browser-local workspace</small>
+				</div>
+			</aside>
+			<main>
+				<div class="breadcrumb">
+					Workspace <span>/</span> <span id="crumb">Patient Log</span>
+				</div>
+				<section id="log" class="view">
+					<div class="heading">
+						<div>
+							<small class="eyebrow">PATIENT DIRECTORY</small>
+							<h1>Patient Log <i></i></h1>
+							<p>Select a patient to manage their booking and consultation.</p>
+						</div>
+						<button class="primary" id="add">＋ Add patient</button>
+					</div>
+					<div class="stats">
+						<div>
+							<i>♧</i>
+							<div>
+								<small>Patients in your log</small><strong id="total">6</strong>
+							</div>
+						</div>
+						<div>
+							<i>▧</i>
+							<div>
+								<small>Current referral</small
+								><strong id="draft-status">Not started</strong>
+							</div>
+						</div>
+						<div>
+							<i>↗</i>
+							<div>
+								<small>Exported this session</small
+								><strong id="exports">0</strong>
+							</div>
+						</div>
+					</div>
+					<div class="card">
+						<div class="card-top">
+							<div>
+								<h2>Your patients <em id="total-pill">6</em></h2>
+								<p>
+									Select a patient to open booking details and consultation
+									notes.
+								</p>
+							</div>
+							<label class="search"
+								>⌕
+								<input
+									id="search"
+									aria-label="Search patients"
+									placeholder="Search name or NHS number"
+							/></label>
+						</div>
+						<div class="table-wrap">
+							<table>
+								<thead>
+									<tr>
+										<th>PATIENT</th>
+										<th>DATE OF BIRTH</th>
+										<th>NHS NUMBER</th>
+										<th>GENDER</th>
+										<th>MOBILE PHONE</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody id="patients"></tbody>
+							</table>
+						</div>
+						<div class="table-footer">
+							<span id="results"></span
+							><span>Demo patients · select any row to begin ↗</span>
+						</div>
+					</div>
+					<div class="hint">
+						<span>◇</span>
+						<div>
+							<b>From patient to referral, in a few steps.</b>
+							<p>
+								Record the booking and consultation, then choose Make referral
+								to carry every detail forward.
+							</p>
+						</div>
+						<button class="text" id="blank">Start a blank referral →</button>
+					</div>
+				</section>
+				<section id="consultation" class="view" hidden>
+					<div class="heading">
+						<div>
+							<small class="eyebrow">PATIENT WORKSPACE</small>
+							<h1 id="encounter-patient">Patient</h1>
+							<p>Booking & consultation notes</p>
+						</div>
+						<button class="secondary" id="back-log">← Patient Log</button>
+					</div>
+					<div id="encounter-summary" class="patient-banner"></div>
+					<div class="workflow-strip">
+						<strong>1. Patient selected</strong><span>→</span
+						><strong class="current">2. Booking & consultation</strong
+						><span>→</span><span>3. Make referral</span>
+					</div>
+					<form id="encounter-form"><div id="encounter-sections"></div></form>
+					<div class="card export-bar">
+						<div>
+							<h2>Continue to imaging request</h2>
+							<p>
+								Patient details, booking information and every consultation note
+								will be copied into the referral.
+							</p>
+							<small
+								>Booking details are recorded locally; no appointment is sent to
+								a scheduling system.</small
+							>
+						</div>
+						<button class="primary" id="make-referral">Make referral →</button>
+					</div>
+				</section>
+				<section id="referral" class="view" hidden>
+					<div class="heading">
+						<div>
+							<small class="eyebrow">NEW IMAGING REQUEST</small>
+							<h1>Create referral</h1>
+							<p>
+								Complete the request and check the booking and consultation
+								details below.
+							</p>
+						</div>
+						<span class="pill">● Draft · saved in this browser</span>
+					</div>
+					<form id="referral-form">
+						<div class="form-layout">
+							<div id="sections"></div>
+							<div>
+								<div class="card rail">
+									<small class="eyebrow">REQUEST OVERVIEW</small>
+									<h2 id="selected">New patient</h2>
+									<p id="selected-nhs">Enter patient details to begin</p>
+									<hr />
+									<div id="progress"></div>
+									<button type="button" id="review-button" class="primary full">
+										Review referral →
+									</button>
+									<p class="fine">
+										Review all details before exporting to your receiving
+										application.
+									</p>
+								</div>
+								<div class="soft">
+									<b>Made for a smooth handover</b>
+									<p>
+										Download each section as a .txt file, or export the full
+										request as structured JSON.
+									</p>
+								</div>
+							</div>
+						</div>
+					</form>
+				</section>
+				<section id="review" class="view" hidden>
+					<div class="heading">
+						<div>
+							<small class="eyebrow">CHECK & EXPORT</small>
+							<h1>Review referral</h1>
+							<p>One final check before your request leaves this workspace.</p>
+						</div>
+						<button class="secondary" id="edit">← Edit referral</button>
+					</div>
+					<div id="status" role="status"></div>
+					<div id="review-cards" class="review-grid"></div>
+					<div class="card export-bar">
+						<div>
+							<h2>Ready for handover</h2>
+							<p>Download a JSON file for your receiving application.</p>
+							<small>No referral is transmitted to a clinical system.</small>
+						</div>
+						<button class="primary" id="export">
+							↓ Export complete referral (.json)
+						</button>
+					</div>
+					<details class="card json">
+						<summary>View JSON preview <span>{ }</span></summary>
+						<pre id="json"></pre>
+					</details>
+				</section>
+				<footer>
+					<span>Imaging Desk · GP imaging referrals</span
+					><span
+						>Demo workspace · data stored on this device
+						<button id="reset" class="text">Reset workspace</button></span
+					>
+				</footer>
+			</main>
+		</div>
+		<dialog id="modal">
+			<form id="add-form">
+				<div class="modal-heading">
+					<div>
+						<small class="eyebrow">PATIENT DIRECTORY</small>
+						<h2>Add a patient</h2>
+					</div>
+					<button
+						type="button"
+						id="close"
+						class="text"
+						aria-label="Close dialog"
+					>
+						✕
+					</button>
+				</div>
+				<p>Add their details to your patient log.</p>
+				<div class="fields" id="add-fields"></div>
+				<div class="actions">
+					<button type="button" id="cancel" class="secondary">Cancel</button
+					><button class="primary">Add patient</button>
+				</div>
+			</form>
+		</dialog>
+		<div id="toast" role="status" aria-live="polite"></div>
+		<script src="../js/Imaging-Desk.js"></script>
+	</body>
+</html>

@@ -13,79 +13,79 @@ MODEL_NAME = "qwen3:1.7b"
 
 
 def find_ollama():
-    executable = shutil.which("ollama")
-    if executable:
-        return Path(executable)
+	executable = shutil.which("ollama")
+	if executable:
+		return Path(executable)
 
-    if sys.platform != "win32":
-        return None
+	if sys.platform != "win32":
+		return None
 
-    local_app_data = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
-    install_locations = (
-        local_app_data / "Programs" / "Ollama" / "ollama.exe",
-        Path(os.environ.get("ProgramFiles", "C:\\Program Files")) / "Ollama" / "ollama.exe",
-    )
-    return next((path for path in install_locations if path.is_file()), None)
+	local_app_data = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+	install_locations = (
+		local_app_data / "Programs" / "Ollama" / "ollama.exe",
+		Path(os.environ.get("ProgramFiles", "C:\\Program Files")) / "Ollama" / "ollama.exe",
+	)
+	return next((path for path in install_locations if path.is_file()), None)
 
 
 def install_ollama_linux():
-    print("Installing Ollama using its official Linux installer...")
-    with urlopen(OLLAMA_LINUX_INSTALL_SCRIPT, timeout=30) as response:
-        install_script = response.read().decode("utf-8")
-    subprocess.run(["sh"], input=install_script, text=True, check=True)
+	print("Installing Ollama using its official Linux installer...")
+	with urlopen(OLLAMA_LINUX_INSTALL_SCRIPT, timeout=30) as response:
+		install_script = response.read().decode("utf-8")
+	subprocess.run(["sh"], input=install_script, text=True, check=True)
 
-    if find_ollama() is None:
-        raise RuntimeError(
-            "Ollama's installer finished, but the ollama executable was not found. "
-            "Restart the terminal and run this script again."
-        )
+	if find_ollama() is None:
+		raise RuntimeError(
+			"Ollama's installer finished, but the ollama executable was not found. "
+			"Restart the terminal and run this script again."
+		)
 
 
 def install_ollama():
-    if find_ollama() is not None:
-        print("Ollama is already installed.")
-        return
+	if find_ollama() is not None:
+		print("Ollama is already installed.")
+		return
 
-    if sys.platform.startswith("linux"):
-        install_ollama_linux()
-        return
-    if sys.platform != "win32":
-        raise SystemExit("Ollama setup currently supports Windows and Linux.")
+	if sys.platform.startswith("linux"):
+		install_ollama_linux()
+		return
+	if sys.platform != "win32":
+		raise SystemExit("Ollama setup currently supports Windows and Linux.")
 
-    print("Installing Ollama using its official Windows installer...")
-    subprocess.run(
-        [
-            "powershell.exe",
-            "-NoProfile",
-            "-ExecutionPolicy",
-            "Bypass",
-            "-Command",
-            f"$ErrorActionPreference = 'Stop'; irm {OLLAMA_INSTALL_SCRIPT} | iex",
-        ],
-        check=True,
-    )
+	print("Installing Ollama using its official Windows installer...")
+	subprocess.run(
+		[
+			"powershell.exe",
+			"-NoProfile",
+			"-ExecutionPolicy",
+			"Bypass",
+			"-Command",
+			f"$ErrorActionPreference = 'Stop'; irm {OLLAMA_INSTALL_SCRIPT} | iex",
+		],
+		check=True,
+	)
 
-    if find_ollama() is None:
-        raise RuntimeError(
-            "Ollama's installer finished, but the ollama executable was not found. "
-            "Restart the terminal and run this script again."
-        )
+	if find_ollama() is None:
+		raise RuntimeError(
+			"Ollama's installer finished, but the ollama executable was not found. "
+			"Restart the terminal and run this script again."
+		)
 
 
 def pull_model(model_name = MODEL_NAME):
-    ollama = find_ollama()
-    if ollama is None:
-        raise RuntimeError("Ollama is not installed.")
+	ollama = find_ollama()
+	if ollama is None:
+		raise RuntimeError("Ollama is not installed.")
 
-    print(f"Downloading Ollama model {model_name}...")
-    result = subprocess.run([str(ollama), "pull", model_name], check=False)
-    if result.returncode != 0:
-        raise SystemExit(
-            f"Could not pull {model_name} (ollama exited with "
-            f"code {result.returncode}). Ensure the Ollama app is running and try again."
-        )
+	print(f"Downloading Ollama model {model_name}...")
+	result = subprocess.run([str(ollama), "pull", model_name], check=False)
+	if result.returncode != 0:
+		raise SystemExit(
+			f"Could not pull {model_name} (ollama exited with "
+			f"code {result.returncode}). Ensure the Ollama app is running and try again."
+		)
 
-    print(f"Model {model_name} is ready.")
+	print(f"Model {model_name} is ready.")
 
 
 def pull_and_install_ollama():
@@ -107,4 +107,4 @@ def pull_and_install_ollama():
 
 
 if __name__ == "__main__":
-    pull_and_install_ollama()
+	pull_and_install_ollama()

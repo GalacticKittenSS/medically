@@ -3,7 +3,10 @@ __pycache__/
 .venv/
 
 # Files
+.editorconfig
 .env
 .medically-api.pid
+.data/
 
 node_modules
+.vscode/

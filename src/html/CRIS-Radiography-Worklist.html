@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>CRIS - Radiology Information System</title>
+		<link rel="stylesheet" href="../css/CRIS-Radiography-Worklist.css" />
+	</head>
+	<body>
+		<div class="classic-window">
+			<div class="titlebar">
+				<span class="app-icon">CRIS</span
+				><span id="windowTitle"
+					>CRIS - Reception mode, CRIS. Demo workspace. Hospital: DEMO01</span
+				><span class="window-controls" aria-hidden="true">_ ▢ ×</span>
+			</div>
+			<div class="menubar">
+				<button data-menu="fileMenu"><u>F</u>ile</button
+				><button data-menu="optionsMenu"><u>O</u>ptions</button
+				><button data-menu="toolsMenu"><u>T</u>ools</button
+				><button id="guideNav"><u>H</u>elp</button
+				><span id="crumb">List of incoming imaging requests</span
+				><span class="user">User: RADIOGRAPHER</span>
+			</div>
+			<div id="fileMenu" class="menu" hidden>
+				<button id="importNav">Import requests (.json)...</button
+				><button id="exportAll">Export worklist (.json)...</button>
+				<hr />
+				<button id="downloadTemplate">Download JSON template</button>
+			</div>
+			<div id="optionsMenu" class="menu" hidden>
+				<button id="showAll">All requests</button
+				><button id="showNew">New requests</button
+				><button id="showUrgent">Urgent / emergency requests</button>
+			</div>
+			<div id="toolsMenu" class="menu" hidden>
+				<button id="openBook">Appointment book</button
+				><button id="formatGuide">JSON format guide</button>
+			</div>
+			<div class="iconbar">
+				<button
+					class="tool sprite s0"
+					id="worklistTool"
+					title="Request worklist"
+					aria-label="Request worklist"
+				></button
+				><button
+					class="tool sprite s1"
+					id="importTool"
+					title="Import JSON requests"
+					aria-label="Import JSON requests"
+				></button
+				><button
+					class="tool sprite s2"
+					id="exportTool"
+					title="Export JSON worklist"
+					aria-label="Export JSON worklist"
+				></button
+				><button
+					class="tool sprite s3"
+					id="homeTool"
+					title="All incoming requests"
+					aria-label="All incoming requests"
+				></button
+				><button
+					class="tool sprite s4"
+					id="bookTool"
+					title="Appointment book"
+					aria-label="Appointment book"
+				></button
+				><button
+					class="tool sprite s5"
+					id="guideTool"
+					title="JSON format guide"
+					aria-label="JSON format guide"
+				></button
+				><button
+					class="tool sprite s6"
+					id="patientTool"
+					title="Selected patient details"
+					aria-label="Selected patient details"
+				></button
+				><button
+					class="tool sprite s7"
+					id="optionsTool"
+					title="Request filters"
+					aria-label="Request filters"
+				></button
+				><button
+					class="tool sprite s8"
+					id="templateTool"
+					title="Download JSON template"
+					aria-label="Download JSON template"
+				></button
+				><button
+					class="tool sprite s9"
+					id="newTool"
+					title="New requests"
+					aria-label="New requests"
+				></button
+				><button
+					class="tool sprite s10"
+					id="urgentTool"
+					title="Urgent requests"
+					aria-label="Urgent requests"
+				></button
+				><button
+					class="tool sprite s11"
+					id="exportPatientTool"
+					title="Export selected patient"
+					aria-label="Export selected patient"
+				></button
+				><button
+					class="tool sprite s12"
+					id="refreshTool"
+					title="Refresh view"
+					aria-label="Refresh view"
+				></button>
+			</div>
+			<main id="main"></main>
+			<footer>
+				<span id="navCount"></span
+				><span>Demonstration · fictional patients · session data only</span
+				><span id="today"></span>
+			</footer>
+		</div>
+		<input type="file" id="file" accept=".json,application/json" hidden />
+		<dialog id="importDialog">
+			<div class="dialog-head">
+				<div>
+					<small class="eyebrow">DATA IMPORT</small>
+					<h2>Import imaging requests</h2>
+				</div>
+				<button class="close" aria-label="Close">×</button>
+			</div>
+			<p>
+				Upload a JSON array, or an object containing a
+				<code>requests</code> array. Patient and referrer details fill
+				automatically from the file.
+			</p>
+			<button class="dropzone" id="choose">
+				<span>↥</span><strong>Choose a JSON file</strong
+				><small>or drop it here · up to 5 MB</small>
+			</button>
+			<div class="options">
+				<label
+					><input type="radio" name="mode" value="append" checked /> Add to
+					worklist</label
+				><label
+					><input type="radio" name="mode" value="replace" /> Replace
+					worklist</label
+				>
+			</div>
+			<p class="notice">
+				Use synthetic data in this demonstration. Imported requests remain in
+				memory until this page is reloaded.
+			</p>
+			<div class="actions">
+				<button id="template">↓ Download example JSON</button
+				><button id="format">View format</button>
+			</div>
+			<div id="error" role="alert"></div>
+		</dialog>
+		<dialog id="guide">
+			<div class="dialog-head">
+				<div>
+					<small class="eyebrow">IMPORT REFERENCE</small>
+					<h2>JSON request format</h2>
+				</div>
+				<button class="close" aria-label="Close">×</button>
+			</div>
+			<p>
+				Required: <code>patient.name</code> and <code>referral.modality</code>.
+				Optional details display as “Not provided”. Dates use YYYY-MM-DD.
+				Omitted IDs are generated.
+			</p>
+			<pre id="schema"></pre>
+			<p>
+				Severity: Routine, Urgent, Emergency.<br />Status: New, Waiting,
+				Appointed, Completed, Rejected.
+			</p>
+			<button class="primary" id="guideDownload">
+				↓ Download example JSON
+			</button>
+		</dialog>
+		<div id="toast" role="status"></div>
+		<script src="../js/CRIS-Radiography-Worklist.js"></script>
+	</body>
+</html>
